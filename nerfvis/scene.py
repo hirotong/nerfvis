@@ -8,7 +8,7 @@ from typing import Optional, List, Union, Callable, Tuple, Any
 import warnings
 
 def _f(name : str, field : str):
-    return name + '__' + field
+    return f'{name}__{field}'
 
 def _format_vec3(vec : np.ndarray):
     return f'[{vec[0]}, {vec[1]}, {vec[2]}]'
@@ -550,9 +550,9 @@ class Scene:
         if radius is None and not np.isinf(self.bb_min).any():
             radius = (self.bb_max - self.bb_min) * 0.5
 
-        if isinstance(center, list) or isinstance(center, tuple):
+        if isinstance(center, (list, tuple)):
             center = np.array(center)
-        if isinstance(radius, list) or isinstance(radius, tuple):
+        if isinstance(radius, (list, tuple)):
             radius = np.array(radius)
         radius *= scale
         self._update_bb(center - radius)
@@ -756,9 +756,8 @@ class Scene:
         if world_up is None and self.world_up is not None:
             world_up = self.world_up
         bb_available = not np.isinf(self.bb_min).any()
-        if cam_origin is None:
-            if bb_available:
-                cam_origin = (self.bb_min + self.bb_max) * 0.5
+        if cam_origin is None and bb_available:
+            cam_origin = (self.bb_min + self.bb_max) * 0.5
 
         if cam_forward is None:
             if self.cam_forward is not None:
@@ -769,13 +768,12 @@ class Scene:
             else:
                 cam_forward = np.array([0.7071068, 0.0, -0.7071068])
 
-        if cam_center is None:
-            if cam_origin is not None:
-                if bb_available:
-                    radius = ((self.bb_max - self.bb_min) * 0.5).max()
-                    cam_center = cam_origin - cam_forward * radius * 3.0
-                elif cam_forward is not None:
-                    cam_center = cam_origin - cam_forward
+        if cam_center is None and cam_origin is not None:
+            if bb_available:
+                radius = ((self.bb_max - self.bb_min) * 0.5).max()
+                cam_center = cam_origin - cam_forward * radius * 3.0
+            elif cam_forward is not None:
+                cam_center = cam_origin - cam_forward
 
         all_instructions = []
         all_instructions.extend(instructions)
@@ -786,7 +784,7 @@ class Scene:
                 "opt.stop_thresh = 1e-1",
                 "opt.sigma_thresh = 1e-1",
                 "Volrend.set_options(opt)"])
-        out_npz_fname = f"volrend.draw.npz"
+        out_npz_fname = "volrend.draw.npz"
         all_instructions.append(f'Volrend.set_title("{self.title}")')
         all_instructions.append(f'load_remote("{out_npz_fname}")')
         if self.nerf is not None:
@@ -795,16 +793,16 @@ class Scene:
         if tree_file is not None:
             all_instructions.append(f'load_remote("{tree_file}")')
         if world_up is not None:
-            all_instructions.append(f'Volrend.set_world_up(' + _format_vec3(world_up) + ')')
+            all_instructions.append(f'Volrend.set_world_up({_format_vec3(world_up)})')
         if cam_center is not None:
-            all_instructions.append('Volrend.set_cam_center(' + _format_vec3(cam_center) + ')')
+            all_instructions.append(f'Volrend.set_cam_center({_format_vec3(cam_center)})')
         if cam_forward is not None:
-            all_instructions.append('Volrend.set_cam_back(' + _format_vec3(-cam_forward) + ')')
+            all_instructions.append(f'Volrend.set_cam_back({_format_vec3(-cam_forward)})')
         if cam_origin is not None:
-            all_instructions.append('Volrend.set_cam_origin(' + _format_vec3(cam_origin) + ')')
-        MONKEY_PATCH = \
-"""
-    <script>
+            all_instructions.append(f'Volrend.set_cam_origin({_format_vec3(cam_origin)})')
+            MONKEY_PATCH = \
+        """
+<script>
         Volrend.onRuntimeInitialized = function() {
             $(document).ready(function() {
                 onInit();

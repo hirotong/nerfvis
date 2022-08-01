@@ -189,78 +189,76 @@ def EvalSH(l: int, m: int, dirs):
     Return:
       array [...]
     """
-    if l <= kHardCodedOrderLimit:
-        # Validate l and m here (don't do it generally since EvalSHSlow also
-        # checks it if we delegate to that function).
-        assert l >= 0, "l must be at least 0."
-        assert -l <= m and m <= l, "m must be between -l and l."
-        dx = dirs[..., 0]
-        dy = dirs[..., 1]
-        dz = dirs[..., 2]
-
-        if l == 0:
-            return HardcodedSH00(dx, dy, dz)
-        elif l == 1:
-            if m == -1:
-                return HardcodedSH1n1(dx, dy, dz)
-            elif m == 0:
-                return HardcodedSH10(dx, dy, dz)
-            elif m == 1:
-                return HardcodedSH1p1(dx, dy, dz)
-        elif l == 2:
-            if m == -2:
-                return HardcodedSH2n2(dx, dy, dz)
-            elif m == -1:
-                return HardcodedSH2n1(dx, dy, dz)
-            elif m == 0:
-                return HardcodedSH20(dx, dy, dz)
-            elif m == 1:
-                return HardcodedSH2p1(dx, dy, dz)
-            elif m == 2:
-                return HardcodedSH2p2(dx, dy, dz)
-        elif l == 3:
-            if m == -3:
-                return HardcodedSH3n3(dx, dy, dz)
-            elif m == -2:
-                return HardcodedSH3n2(dx, dy, dz)
-            elif m == -1:
-                return HardcodedSH3n1(dx, dy, dz)
-            elif m == 0:
-                return HardcodedSH30(dx, dy, dz)
-            elif m == 1:
-                return HardcodedSH3p1(dx, dy, dz)
-            elif m == 2:
-                return HardcodedSH3p2(dx, dy, dz)
-            elif m == 3:
-                return HardcodedSH3p3(dx, dy, dz)
-        elif l == 4:
-            if m == -4:
-                return HardcodedSH4n4(dx, dy, dz)
-            elif m == -3:
-                return HardcodedSH4n3(dx, dy, dz)
-            elif m == -2:
-                return HardcodedSH4n2(dx, dy, dz)
-            elif m == -1:
-                return HardcodedSH4n1(dx, dy, dz)
-            elif m == 0:
-                return HardcodedSH40(dx, dy, dz)
-            elif m == 1:
-                return HardcodedSH4p1(dx, dy, dz)
-            elif m == 2:
-                return HardcodedSH4p2(dx, dy, dz)
-            elif m == 3:
-                return HardcodedSH4p3(dx, dy, dz)
-            elif m == 4:
-                return HardcodedSH4p4(dx, dy, dz)
-
-        # This is unreachable given the CHECK's above but the compiler can't tell.
-        return None
-
-    else:
+    if l > kHardCodedOrderLimit:
         # Not hard-coded so use the recurrence relation (which will convert this
         # to spherical coordinates).
         # return EvalSHSlow(l, m, dx, dy, dz)
         raise NotImplementedError
+    # Validate l and m here (don't do it generally since EvalSHSlow also
+    # checks it if we delegate to that function).
+    assert l >= 0, "l must be at least 0."
+    assert -l <= m <= l, "m must be between -l and l."
+    dx = dirs[..., 0]
+    dy = dirs[..., 1]
+    dz = dirs[..., 2]
+
+    if l == 0:
+        return HardcodedSH00(dx, dy, dz)
+    elif l == 1:
+        if m == -1:
+            return HardcodedSH1n1(dx, dy, dz)
+        elif m == 0:
+            return HardcodedSH10(dx, dy, dz)
+        elif m == 1:
+            return HardcodedSH1p1(dx, dy, dz)
+    elif l == 2:
+        if m == -1:
+            return HardcodedSH2n1(dx, dy, dz)
+        elif m == -2:
+            return HardcodedSH2n2(dx, dy, dz)
+        elif m == 0:
+            return HardcodedSH20(dx, dy, dz)
+        elif m == 1:
+            return HardcodedSH2p1(dx, dy, dz)
+        elif m == 2:
+            return HardcodedSH2p2(dx, dy, dz)
+    elif l == 3:
+        if m == -1:
+            return HardcodedSH3n1(dx, dy, dz)
+        elif m == -2:
+            return HardcodedSH3n2(dx, dy, dz)
+        elif m == -3:
+            return HardcodedSH3n3(dx, dy, dz)
+        elif m == 0:
+            return HardcodedSH30(dx, dy, dz)
+        elif m == 1:
+            return HardcodedSH3p1(dx, dy, dz)
+        elif m == 2:
+            return HardcodedSH3p2(dx, dy, dz)
+        elif m == 3:
+            return HardcodedSH3p3(dx, dy, dz)
+    elif l == 4:
+        if m == -1:
+            return HardcodedSH4n1(dx, dy, dz)
+        elif m == -2:
+            return HardcodedSH4n2(dx, dy, dz)
+        elif m == -3:
+            return HardcodedSH4n3(dx, dy, dz)
+        elif m == -4:
+            return HardcodedSH4n4(dx, dy, dz)
+        elif m == 0:
+            return HardcodedSH40(dx, dy, dz)
+        elif m == 1:
+            return HardcodedSH4p1(dx, dy, dz)
+        elif m == 2:
+            return HardcodedSH4p2(dx, dy, dz)
+        elif m == 3:
+            return HardcodedSH4p3(dx, dy, dz)
+        elif m == 4:
+            return HardcodedSH4p4(dx, dy, dz)
+
+    # This is unreachable given the CHECK's above but the compiler can't tell.
+    return None
 
 
 def spherical_uniform_sampling(sample_count, device="cpu"):
